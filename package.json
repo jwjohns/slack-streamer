@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "vitest"
+    "test": "vitest run"
   },
   "peerDependencies": {
     "@slack/web-api": ">=6"
