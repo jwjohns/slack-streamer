@@ -1,16 +1,29 @@
 # slack-streamer
 
-Lightweight helpers for streaming text updates into Slack without overthinking rate limits.
+Stream text updates into Slack with throttling, session modes, and sane defaults.
 
-## Status
+## Why
 
-Early scaffold. APIs may change.
+Slack APIs are easy to call but easy to over-call. `slack-streamer` gives you a
+minimal session abstraction that handles update cadence, thread switching, and
+rate-limit backoff without pulling in heavy abstractions.
 
 ## Install
 
 ```bash
 npm install slack-streamer
 ```
+
+`@slack/web-api` is a peer dependency, so install it in your app too:
+
+```bash
+npm install @slack/web-api
+```
+
+## Setup Slack
+
+See `docs/setup-slack.md` for a quick guide to creating an app token and
+inviting your bot to a channel.
 
 ## Quick start
 
@@ -27,18 +40,98 @@ const session = streamer.startSession({
 });
 
 session.setStatus("Thinking...");
-for (const chunk of ["Hello", " world", "!"]) {
-  session.append(chunk);
-}
+session.append("Hello");
+session.append(" world");
 await session.finalize();
 ```
 
-## Roadmap
+## Session modes
 
-- Core streaming sessions with edit, thread, and hybrid modes.
-- Adapters for async iterables and Node streams.
-- Examples for Slack Bolt and socket mode.
-- Tests for throttling, 429 handling, and hybrid switching.
+- `edit`: post once, then update the same message
+- `thread`: post diffs as thread replies (no updates)
+- `hybrid`: start in edit mode, switch to thread based on size or 429
+
+## API
+
+### `new SlackStreamer(options)`
+
+```ts
+type SlackStreamerOptions = {
+  client: SlackWebClient;
+  transport?: SlackTransportOptions;
+  scheduler?: SchedulerOptions;
+};
+```
+
+### `streamer.startSession(options)`
+
+```ts
+type SessionOptions = {
+  channel: string;
+  threadTs?: string;
+  mode?: "edit" | "thread" | "hybrid";
+  hybridSwitchChars?: number;
+  hybridSwitchOn429?: boolean;
+  scheduler?: SchedulerOptions;
+};
+```
+
+### `session.append(text)`
+Append a chunk of text and let the scheduler decide when to flush.
+
+### `session.setStatus(text)`
+Prepends a status line to the rendered message (`_Thinking..._`).
+
+### `session.finalize()`
+Flush any pending output and stop the scheduler.
+
+### `session.cancel()`
+Stop without flushing.
+
+## Scheduler options
+
+```ts
+type SchedulerOptions = {
+  flushIntervalMs?: number; // default 500
+  minCharsDelta?: number;   // default 24
+  maxUpdatesPerMinute?: number; // default 80
+};
+```
+
+## Transport options
+
+```ts
+type SlackTransportOptions = {
+  maxRetries?: number;      // default 5
+  baseRetryDelayMs?: number; // default 500
+  maxRetryDelayMs?: number;  // default 8000
+  onRateLimit?: (retryAfterMs: number) => void;
+};
+```
+
+## Local testing (no Slack needed)
+
+```bash
+npm install
+npm test
+```
+
+## Local testing (with Slack)
+
+A runnable example is in `examples/local-test.ts`.
+
+```bash
+npm install
+npm install -D ts-node
+SLACK_TOKEN=xoxb-your-token SLACK_CHANNEL=C12345678 \
+  npx ts-node examples/local-test.ts
+```
+
+## Development
+
+```bash
+npm run build
+```
 
 ## License
 
