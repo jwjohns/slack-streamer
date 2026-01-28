@@ -2,6 +2,7 @@ import { TextBuffer } from "./buffer";
 import { Scheduler, SchedulerOptions } from "./scheduler";
 import { diffAppend } from "./util/diff";
 import { SlackTransport } from "./transport";
+import { RotatingStatus, RotatingStatusOptions } from "./rotatingStatus";
 
 export type SessionMode = "edit" | "thread" | "hybrid";
 
@@ -31,6 +32,7 @@ export class Session {
   private closed = false;
   private lastError: unknown;
   private threadModeActive = false;
+  private rotatingStatus: RotatingStatus | null = null;
 
   constructor(transport: SlackTransport, options: SessionOptions) {
     this.transport = transport;
@@ -65,12 +67,39 @@ export class Session {
 
   clearStatus() {
     if (this.closed) return;
+    this.stopRotatingStatus();
     this.buffer.clearStatus();
     this.scheduler.requestFlush(true);
   }
 
+  /**
+   * Start cycling through status messages (e.g., "Thinking...", "Pondering...").
+   * Uses fun default messages if none provided.
+   */
+  startRotatingStatus(options?: RotatingStatusOptions) {
+    if (this.closed) return;
+    this.stopRotatingStatus();
+    this.rotatingStatus = new RotatingStatus(
+      (status) => this.setStatus(status),
+      options
+    );
+    this.rotatingStatus.start();
+  }
+
+  /**
+   * Stop the rotating status animation and clear the status line.
+   */
+  stopRotatingStatus() {
+    if (this.rotatingStatus) {
+      this.rotatingStatus.stop();
+      this.rotatingStatus = null;
+    }
+  }
+
   async finalize() {
     if (this.closed) return;
+    this.stopRotatingStatus();
+    this.buffer.clearStatus();
     this.scheduler.stop();
     await this.enqueueFlush(true);
     this.closed = true;
@@ -79,11 +108,13 @@ export class Session {
 
   cancel() {
     if (this.closed) return;
+    this.stopRotatingStatus();
     this.scheduler.stop();
     this.closed = true;
   }
 
   async error(message: string) {
+    this.stopRotatingStatus();
     this.setStatus(message);
     await this.enqueueFlush(true);
     this.closed = true;
@@ -91,7 +122,7 @@ export class Session {
 
   private enqueueFlush(force: boolean): Promise<void> {
     this.flushChain = this.flushChain
-      .catch(() => {})
+      .catch(() => { })
       .then(() => this.flush(force));
     return this.flushChain;
   }

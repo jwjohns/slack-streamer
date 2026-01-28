@@ -9,3 +9,5 @@ export type {
   SlackWebClient,
 } from "./transport";
 export type { SchedulerOptions } from "./scheduler";
+export { RotatingStatus, DEFAULT_STATUS_MESSAGES } from "./rotatingStatus";
+export type { RotatingStatusOptions } from "./rotatingStatus";

@@ -1,6 +1,20 @@
-# slack-streamer
+<p align="center">
+  <h1 align="center">slack-streamer</h1>
+  <p align="center">
+    <strong>Stream text updates into Slack with throttling, rate-limit backoff, and session modes.</strong>
+  </p>
+  <p align="center">
+    <a href="https://www.npmjs.com/package/slack-streamer"><img src="https://img.shields.io/npm/v/slack-streamer.svg?style=flat-square" alt="npm version"></a>
+    <a href="https://github.com/jwjohns/slack-streamer/actions"><img src="https://img.shields.io/github/actions/workflow/status/jwjohns/slack-streamer/ci.yml?branch=main&style=flat-square" alt="CI"></a>
+    <a href="https://github.com/jwjohns/slack-streamer/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/slack-streamer.svg?style=flat-square" alt="MIT License"></a>
+    <img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg?style=flat-square" alt="Node.js">
+    <img src="https://img.shields.io/badge/TypeScript-%3E%3D5.0-blue.svg?style=flat-square" alt="TypeScript">
+  </p>
+</p>
 
-Stream text updates into Slack with throttling, session modes, and sane defaults.
+---
+
+Minimal Slack streaming library for AI/LLM responses. Perfect for streaming ChatGPT, Claude, or any LLM output to Slack in real-time with automatic throttling and graceful rate-limit handling.
 
 ## Why
 
@@ -14,18 +28,33 @@ rate-limit backoff without pulling in heavy abstractions.
 npm install slack-streamer
 ```
 
-`@slack/web-api` is a peer dependency, so install it in your app too:
+<details>
+<summary>pnpm / yarn / bun</summary>
 
 ```bash
-npm install @slack/web-api
+pnpm add slack-streamer
+yarn add slack-streamer
+bun add slack-streamer
 ```
+</details>
 
-## Setup Slack
+## Features
 
-See `docs/setup-slack.md` for a quick guide to creating an app token and
-inviting your bot to a channel.
+- **Stream text in real-time** — Perfect for LLM/AI responses
+- **Three session modes** — `edit`, `thread`, and `hybrid`
+- **Smart throttling** — Batches updates to avoid rate limits
+- **Automatic retry** — Handles 429s and transient errors gracefully
+- **Rotating status** — Sims-style "Thinking...", "Pondering..." animations
+- **Works with Bolt** — Drop-in compatible with `@slack/bolt`
+- **Zero config** — Sensible defaults, customize when needed
+- **Fully tested** — 43 tests across all modules
 
-## Quick start
+## Documentation
+
+- **[Usage Guide](./docs/usage.md)** — Detailed examples and use cases
+- **[Slack Setup](./docs/setup-slack.md)** — Creating your Slack app
+
+## Quick Start
 
 ```ts
 import { SlackStreamer } from "slack-streamer";
@@ -88,7 +117,50 @@ Flush any pending output and stop the scheduler.
 ### `session.cancel()`
 Stop without flushing.
 
-## Scheduler options
+### `session.startRotatingStatus(options?)`
+Start cycling through status messages (Sims/Claude-style "Thinking...", "Pondering...").
+
+```ts
+// Use fun defaults
+session.startRotatingStatus();
+
+// Or provide your own messages
+session.startRotatingStatus({
+  messages: ["Analyzing...", "Computing...", "Almost there..."],
+  intervalMs: 2000,  // rotate every 2 seconds
+  shuffle: true,     // randomize order
+});
+```
+
+### `session.stopRotatingStatus()`
+Stop the rotating status animation. Also called automatically by `finalize()`.
+
+## Using with Bolt
+
+Works seamlessly with Bolt apps:
+
+```ts
+import { App } from "@slack/bolt";
+import { SlackStreamer } from "slack-streamer";
+
+const app = new App({ token: "xoxb-...", signingSecret: "..." });
+const streamer = new SlackStreamer({ client: app.client });
+
+app.message("ask", async ({ message }) => {
+  const session = streamer.startSession({
+    channel: message.channel,
+    threadTs: message.ts,
+    mode: "edit",
+  });
+  
+  session.startRotatingStatus(); // "Thinking...", "Pondering..."
+  for await (const chunk of someAIStream()) {
+    session.append(chunk);
+  }
+  await session.finalize();
+});
+```
+
 
 ```ts
 type SchedulerOptions = {
