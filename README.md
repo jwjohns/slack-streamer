@@ -4,9 +4,8 @@
     <strong>Stream text updates into Slack with throttling, rate-limit backoff, and session modes.</strong>
   </p>
   <p align="center">
-    <a href="https://www.npmjs.com/package/slack-streamer"><img src="https://img.shields.io/npm/v/slack-streamer.svg?style=flat-square" alt="npm version"></a>
     <a href="https://github.com/jwjohns/slack-streamer/actions"><img src="https://img.shields.io/github/actions/workflow/status/jwjohns/slack-streamer/ci.yml?branch=main&style=flat-square" alt="CI"></a>
-    <a href="https://github.com/jwjohns/slack-streamer/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/slack-streamer.svg?style=flat-square" alt="MIT License"></a>
+    <a href="https://github.com/jwjohns/slack-streamer/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jwjohns/slack-streamer?style=flat-square" alt="MIT License"></a>
     <img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg?style=flat-square" alt="Node.js">
     <img src="https://img.shields.io/badge/TypeScript-%3E%3D5.0-blue.svg?style=flat-square" alt="TypeScript">
   </p>
