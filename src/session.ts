@@ -79,10 +79,7 @@ export class Session {
   startRotatingStatus(options?: RotatingStatusOptions) {
     if (this.closed) return;
     this.stopRotatingStatus();
-    this.rotatingStatus = new RotatingStatus(
-      (status) => this.setStatus(status),
-      options
-    );
+    this.rotatingStatus = new RotatingStatus((status) => this.setStatus(status), options);
     this.rotatingStatus.start();
   }
 
@@ -121,9 +118,7 @@ export class Session {
   }
 
   private enqueueFlush(force: boolean): Promise<void> {
-    this.flushChain = this.flushChain
-      .catch(() => { })
-      .then(() => this.flush(force));
+    this.flushChain = this.flushChain.catch(() => {}).then(() => this.flush(force));
     return this.flushChain;
   }
 

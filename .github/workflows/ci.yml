@@ -69,8 +69,20 @@ jobs:
       # Use vitest via bun (bun test doesn't support vitest's fake timers)
       - run: bun run test
 
+  build-yarn:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: corepack enable
+      - run: yarn install
+      - run: yarn run build
+      - run: yarn test
+
   publish:
-    needs: [lint, test, build-npm, build-pnpm, build-bun]
+    needs: [lint, test, build-npm, build-pnpm, build-bun, build-yarn]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:

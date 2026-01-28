@@ -1,8 +1,4 @@
-import type {
-  SlackPostMessageArgs,
-  SlackUpdateMessageArgs,
-  SlackWebClient,
-} from "../src";
+import type { SlackPostMessageArgs, SlackUpdateMessageArgs, SlackWebClient } from "../src";
 
 type PostHandler = (args: SlackPostMessageArgs) => Promise<any>;
 type UpdateHandler = (args: SlackUpdateMessageArgs) => Promise<any>;

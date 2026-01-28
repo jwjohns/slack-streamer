@@ -46,8 +46,9 @@ describe("SlackTransport", () => {
 
     const transport = new SlackTransport(client, { maxRetries: 3 });
 
-    await expect(transport.postMessage({ channel: "C1", text: "hi" }))
-      .rejects.toThrow("channel_not_found");
+    await expect(transport.postMessage({ channel: "C1", text: "hi" })).rejects.toThrow(
+      "channel_not_found"
+    );
   });
 
   it("throws immediately on invalid_auth", async () => {
@@ -61,8 +62,9 @@ describe("SlackTransport", () => {
 
     const transport = new SlackTransport(client);
 
-    await expect(transport.postMessage({ channel: "C1", text: "hi" }))
-      .rejects.toThrow("invalid_auth");
+    await expect(transport.postMessage({ channel: "C1", text: "hi" })).rejects.toThrow(
+      "invalid_auth"
+    );
   });
 
   it("retries on transient 5xx errors", async () => {
@@ -192,4 +194,3 @@ describe("SlackTransport", () => {
     expect(attempts).toBe(2);
   });
 });
-

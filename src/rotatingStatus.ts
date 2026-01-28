@@ -31,10 +31,7 @@ export class RotatingStatus {
   private timer: ReturnType<typeof setInterval> | null = null;
   private index = 0;
 
-  constructor(
-    onStatusChange: (status: string) => void,
-    options: RotatingStatusOptions = {}
-  ) {
+  constructor(onStatusChange: (status: string) => void, options: RotatingStatusOptions = {}) {
     this.onStatusChange = onStatusChange;
     this.intervalMs = options.intervalMs ?? 2500;
 
