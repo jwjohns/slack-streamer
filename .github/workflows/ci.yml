@@ -53,8 +53,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
-      - run: pnpm install
+      - run: pnpm install --no-frozen-lockfile
       - run: pnpm run build
       - run: pnpm test
 
@@ -67,7 +66,8 @@ jobs:
           bun-version: latest
       - run: bun install
       - run: bun run build
-      - run: bun test
+      # Use vitest via bun (bun test doesn't support vitest's fake timers)
+      - run: bun run test
 
   publish:
     needs: [lint, test, build-npm, build-pnpm, build-bun]
